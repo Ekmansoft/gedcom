@@ -5,6 +5,7 @@
   "description": "a simple and readable gedcom parser",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -22,7 +23,7 @@
     "doc": "typedoc --plugin typedoc-plugin-markdown --readme none index.ts",
     "lint": "biome check",
     "prepublishOnly": "npm run build",
-    "build": "tsup lib/index.ts --format esm,cjs && tsup lib/cli.ts --format esm"
+    "build": "tsup lib/index.ts --format esm,cjs --dts && tsup lib/cli.ts --format esm"
   },
   "keywords": [
     "gedcom",
