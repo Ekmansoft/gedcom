@@ -71,16 +71,24 @@ export function tokenize(buf: string, lineNumber: number): Line {
 
   if (xref_id) line.xref_id = xref_id;
 
-  const plaintext = (tag === "CONC" || tag === "CONT" || tag === "NOTE");
+  const plaintext = tag === "CONC" || tag === "CONT" || tag === "NOTE";
   const delim = buf.match(rDelim);
-  if (delim && !plaintext) {
+  if (delim) {
     buf = buf.substring(delim[0].length);
-    const pointer_match = buf.match(rPointer);
-    const value_match = buf.match(rLineItem);
-    if (pointer_match) {
-      line.pointer = pointer_match[0];
-    } else if (value_match) {
-      line.value = value_match[1];
+    if (plaintext) {
+      // For plaintext tags, capture everything as value without trying to match pointers
+      const value_match = buf.match(rLineItem);
+      if (value_match) {
+        line.value = value_match[1];
+      }
+    } else {
+      const pointer_match = buf.match(rPointer);
+      const value_match = buf.match(rLineItem);
+      if (pointer_match) {
+        line.pointer = pointer_match[0];
+      } else if (value_match) {
+        line.value = value_match[1];
+      }
     }
   }
 
