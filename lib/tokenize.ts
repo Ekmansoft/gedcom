@@ -16,6 +16,9 @@ const rPointer = new RegExp(
 const rTag = new RegExp(`^(_?[${cAlphanum}]+)`);
 const rLineItem = new RegExp(/^(.*)/);
 
+// Tags that should be treated as plaintext (no pointer matching)
+const PLAINTEXT_TAGS = new Set(["CONC", "CONT", "NOTE"]);
+
 type TagName = keyof typeof FORMAL_NAMES;
 
 export type Line = {
@@ -71,22 +74,19 @@ export function tokenize(buf: string, lineNumber: number): Line {
 
   if (xref_id) line.xref_id = xref_id;
 
-  const plaintext = tag === "CONC" || tag === "CONT" || tag === "NOTE";
   const delim = buf.match(rDelim);
   if (delim) {
     buf = buf.substring(delim[0].length);
-    if (plaintext) {
-      // For plaintext tags, capture everything as value without trying to match pointers
+
+    // For plaintext tags (CONC, CONT, NOTE), skip pointer matching
+    const isPlaintext = PLAINTEXT_TAGS.has(tag);
+    const pointer_match = isPlaintext ? null : buf.match(rPointer);
+
+    if (pointer_match) {
+      line.pointer = pointer_match[0];
+    } else {
       const value_match = buf.match(rLineItem);
       if (value_match) {
-        line.value = value_match[1];
-      }
-    } else {
-      const pointer_match = buf.match(rPointer);
-      const value_match = buf.match(rLineItem);
-      if (pointer_match) {
-        line.pointer = pointer_match[0];
-      } else if (value_match) {
         line.value = value_match[1];
       }
     }
